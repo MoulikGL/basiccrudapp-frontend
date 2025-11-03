@@ -1,0 +1,103 @@
+/* Page background */
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #6b73ff 0%, #9295c7 100%);
+    font-family: "Poppins", sans-serif;
+  }
+  
+  /* Box container */
+  .login-box {
+    background: #fff;
+    padding: 40px 35px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+  }
+  
+  /* Title */
+  .login-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 8px;
+  }
+  
+  .login-subtitle {
+    color: #777;
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+  }
+  
+  /* Form */
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* Input fields */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .form-group label {
+    font-size: 0.85rem;
+    color: #444;
+    margin-bottom: 5px;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: 0.3s;
+  }
+  
+  .form-group input:focus {
+    border-color: #6b73ff;
+    box-shadow: 0 0 4px rgba(107, 115, 255, 0.4);
+  }
+  
+  /* Button */
+  .login-button {
+    background: #6b73ff;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .login-button:hover {
+    background: #5861e0;
+  }
+  
+  /* Signup link */
+  .signup-text {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  .signup-text a {
+    color: #6b73ff;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .signup-text a:hover {
+    text-decoration: underline;
+  }
+  
