@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
-import SignUp from "./pages/Signup";
+import Signup from "./pages/Signup";
 
 const App: React.FC = () => {
   return (
@@ -9,7 +9,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="*" element={<h2>Page Not Found</h2>} />
       </Routes>
     </BrowserRouter>
