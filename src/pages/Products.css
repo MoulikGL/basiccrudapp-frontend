@@ -1,0 +1,26 @@
+.products-container {
+    padding: 2rem;
+    max-width: 700px;
+    margin: 0 auto;
+    font-family: system-ui, sans-serif;
+  }
+  
+  .product-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .product-item {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    transition: 0.2s ease;
+  }
+  
+  .product-item:hover {
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  
