@@ -21,7 +21,7 @@ const Login: React.FC = () => {
     if (response.ok) {
       const data = await response.json();
       alert(`Welcome back, ${data.user.fullName}!`);
-      navigate("/dashboard");
+      navigate("/products");
     } else {
       const data = await response.json();
       alert(data.message || "Login failed");
