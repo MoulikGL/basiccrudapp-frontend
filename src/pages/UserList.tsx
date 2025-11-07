@@ -3,7 +3,7 @@ import styles from "./UserList.module.css";
 
 interface User {
   id: number;
-  name: string;
+  fullName: string;
   email: string;
   phoneNumber: string;
   address: string;
@@ -75,13 +75,13 @@ const UserList: React.FC = () => {
               <td>
                 {editingId === user.id ? (
                   <input
-                    value={editedUser.name ?? ""}
+                    value={editedUser.fullName ?? ""}
                     onChange={(e) =>
-                      setEditedUser({ ...editedUser, name: e.target.value })
+                      setEditedUser({ ...editedUser, fullName: e.target.value })
                     }
                   />
                 ) : (
-                  user.name
+                  user.fullName
                 )}
               </td>
               <td>
