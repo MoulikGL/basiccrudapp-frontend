@@ -18,12 +18,11 @@ const Login: React.FC = () => {
       body: JSON.stringify({ email, password }),
     });
 
+    const data = await response.json();
     if (response.ok) {
-      const data = await response.json();
       alert(`Welcome back, ${data.user.fullName}!`);
       navigate("/products");
     } else {
-      const data = await response.json();
       alert(data.message || "Login failed");
     }
   };

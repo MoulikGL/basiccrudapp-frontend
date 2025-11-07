@@ -4,6 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 
 const Signup: React.FC = () => {
   const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [address, setAddress] = useState("");
+  const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -22,14 +25,15 @@ const Signup: React.FC = () => {
     const response = await fetch(`${apiUrl}/user/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullName, email, password }),
+      body: JSON.stringify({ fullName, phoneNumber, address, company, email, password }),
     });
+
+    const data = await response.json();
 
     if (response.ok) {
       alert("Signup successful!");
       navigate("/login");
     } else {
-      const data = await response.json();
       alert(data.message || "Signup failed");
     }
   };
@@ -48,6 +52,39 @@ const Signup: React.FC = () => {
               placeholder="Enter your full name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Phone Number</label>
+            <input
+              type="text"
+              placeholder="Enter your phone number"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Address</label>
+            <input
+              type="text"
+              placeholder="Enter your address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Company</label>
+            <input
+              type="text"
+              placeholder="Enter your company name"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
               required
             />
           </div>

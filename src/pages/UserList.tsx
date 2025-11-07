@@ -5,8 +5,9 @@ interface User {
   id: number;
   name: string;
   email: string;
-  phone: string;
-  company: { name: string };
+  phoneNumber: string;
+  address: string;
+  company: string;
 }
 
 const USERS_PER_PAGE = 5;
@@ -17,9 +18,10 @@ const UserList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/users")
+    fetch(`${apiUrl}/user`)
       .then((res) => res.json())
       .then((data) => setUsers(data))
       .finally(() => setLoading(false));
@@ -61,6 +63,7 @@ const UserList: React.FC = () => {
             <th>Name</th>
             <th>Email</th>
             <th>Phone</th>
+            <th>Address</th>
             <th>Company</th>
             <th>Actions</th>
           </tr>
@@ -93,8 +96,9 @@ const UserList: React.FC = () => {
                   user.email
                 )}
               </td>
-              <td>{user.phone}</td>
-              <td>{user.company.name}</td>
+              <td>{user.phoneNumber}</td>
+              <td>{user.address}</td>
+              <td>{user.company}</td>
               <td className={styles.actions}>
                 {editingId === user.id ? (
                   <>
