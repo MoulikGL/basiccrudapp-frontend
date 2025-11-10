@@ -1,1 +1,1 @@
-# Frontend of BasicCrudApp 1
+# Frontend of BasicCrudApp
