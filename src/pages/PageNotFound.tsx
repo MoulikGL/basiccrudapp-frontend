@@ -9,7 +9,7 @@ export default function PageNotFound() {
     <Box sx={{ textAlign: "center", justifyContent: "center", alignItems: "center", display: "flex", flexDirection: "column"  }} >
       <CardMedia component="img" image={notFoundImg} sx={{ maxWidth: 400 }} />
       <Button variant="outlined" onClick={() => navigate("/")} sx={{ color: "blue", borderColor: "blue" }} >
-        Go to Homepage
+        Please Login Again
       </Button>
     </Box>
   );
