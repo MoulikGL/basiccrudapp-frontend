@@ -14,14 +14,14 @@ const USERS_PER_PAGE = 5;
 const STORAGE_KEY = "userlist_local_cache_v1";
 
 const UserList: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);//test comment
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
-   useEffect(() => {
+  useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
@@ -40,11 +40,11 @@ const UserList: React.FC = () => {
           return;
         }
         const data = await res.json();
-        // if API returned array or object with data property, handle both
         const list = Array.isArray(data) ? data : data?.data ?? [];
         setUsers(list);
-
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch {}
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        } catch {}
       } catch (err) {
         console.error("Error loading users:", err);
         setUsers([]);
@@ -54,8 +54,7 @@ const UserList: React.FC = () => {
     };
 
     load();
-    
-  }, []);
+  }, [apiUrl]);
 
   const totalPages = Math.max(1, Math.ceil(users.length / USERS_PER_PAGE));
   const currentUsers = users.slice(
@@ -75,18 +74,21 @@ const UserList: React.FC = () => {
   const handleDelete = (id: number) => {
     if (window.confirm("Delete this user?")) {
       persist(users.filter((u) => u.id !== id));
-
-      const newTotalPages = Math.max(1, Math.ceil((users.length - 1) / USERS_PER_PAGE));
+      const newTotalPages = Math.max(
+        1,
+        Math.ceil((users.length - 1) / USERS_PER_PAGE)
+      );
       if (currentPage > newTotalPages) setCurrentPage(newTotalPages);
     }
   };
 
   const handleEdit = (user: User) => {
     setEditingId(user.id);
-    setEditedUser({ ...user }); 
+    setEditedUser({ ...user });
   };
 
-  const handleSave = () => {
+  // handleSave function with PUT request
+  const handleSave = async () => {
     if (editingId === null) return;
 
     if (!editedUser.fullName || !editedUser.email) {
@@ -94,22 +96,36 @@ const UserList: React.FC = () => {
       return;
     }
 
-    const next = users.map((u) =>
-      u.id === editingId
-        ? {
-            ...u,
-            fullName: editedUser.fullName ?? u.fullName,
-            email: editedUser.email ?? u.email,
-            phoneNumber: editedUser.phoneNumber ?? u.phoneNumber,
-            address: editedUser.address ?? u.address,
-            company: editedUser.company ?? u.company,
-          }
-        : u
-    );
+    const updatedUser = {
+      ...users.find((u) => u.id === editingId),
+      ...editedUser,
+    } as User;
 
-    persist(next);
-    setEditingId(null);
-    setEditedUser({});
+    try {
+      // PUT request to backend API
+      const res = await fetch(`${apiUrl}/user/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedUser),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to update user: ${res.status}`);
+      }
+
+      // Update local state
+      const next = users.map((u) =>
+        u.id === editingId ? updatedUser : u
+      );
+      persist(next);
+      alert("✅ User updated successfully on the server!");
+    } catch (err) {
+      console.error("Error updating user:", err);
+      alert("❌ Failed to update user on server.");
+    } finally {
+      setEditingId(null);
+      setEditedUser({});
+    }
   };
 
   if (loading) return <p>Loading...</p>;
@@ -138,7 +154,10 @@ const UserList: React.FC = () => {
                   <input
                     value={editedUser.fullName ?? ""}
                     onChange={(e) =>
-                      setEditedUser({ ...editedUser, fullName: e.target.value })
+                      setEditedUser({
+                        ...editedUser,
+                        fullName: e.target.value,
+                      })
                     }
                   />
                 ) : (
@@ -150,7 +169,10 @@ const UserList: React.FC = () => {
                   <input
                     value={editedUser.email ?? ""}
                     onChange={(e) =>
-                      setEditedUser({ ...editedUser, email: e.target.value })
+                      setEditedUser({
+                        ...editedUser,
+                        email: e.target.value,
+                      })
                     }
                   />
                 ) : (
@@ -162,40 +184,46 @@ const UserList: React.FC = () => {
                   <input
                     value={editedUser.phoneNumber ?? ""}
                     onChange={(e) =>
-                      setEditedUser({ ...editedUser, phoneNumber: e.target.value })
+                      setEditedUser({
+                        ...editedUser,
+                        phoneNumber: e.target.value,
+                      })
                     }
                   />
                 ) : (
                   user.phoneNumber
                 )}
               </td>
-
               <td>
                 {editingId === user.id ? (
                   <input
                     value={editedUser.address ?? ""}
                     onChange={(e) =>
-                      setEditedUser({ ...editedUser, address: e.target.value })
+                      setEditedUser({
+                        ...editedUser,
+                        address: e.target.value,
+                      })
                     }
                   />
                 ) : (
                   user.address
                 )}
               </td>
-
               <td>
                 {editingId === user.id ? (
                   <input
                     value={editedUser.company ?? ""}
                     onChange={(e) =>
-                      setEditedUser({ ...editedUser, company: e.target.value })
+                      setEditedUser({
+                        ...editedUser,
+                        company: e.target.value,
+                      })
                     }
                   />
                 ) : (
                   user.company
                 )}
               </td>
-
               <td className={styles.actions}>
                 {editingId === user.id ? (
                   <>
