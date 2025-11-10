@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Products from "./pages/Products";
 import UserList from "./pages/UserList";
+import PageNotFound from "./pages/PageNotFound";
 
 const App: React.FC = () => {
   return (
@@ -15,7 +16,7 @@ const App: React.FC = () => {
         <Route path="signup" element={<Signup />} />
         <Route path="products" element={<Products />} />
         <Route path="userlist" element={<UserList />} />
-        <Route path="*" element={<h2>Page Not Found</h2>} />
+        <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>
   );
