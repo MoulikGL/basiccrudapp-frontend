@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styles from "./UserList.module.css";
+import { useNotification } from "../NotificationProvider";
 
 interface User {
   id: number;
@@ -20,6 +21,7 @@ const UserList: React.FC = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
+  const { show } = useNotification(); 
 
   useEffect(() => {
     const load = async () => {
@@ -32,10 +34,9 @@ const UserList: React.FC = () => {
           return;
         }
 
-        // fallback to API
         const res = await fetch(`${apiUrl}/user`);
         if (!res.ok) {
-          console.warn("Failed to fetch users from API, using empty list.");
+          show("Failed to fetch users from API", "error");
           setUsers([]);
           return;
         }
@@ -47,6 +48,7 @@ const UserList: React.FC = () => {
         } catch {}
       } catch (err) {
         console.error("Error loading users:", err);
+        show("Error loading users", "error");
         setUsers([]);
       } finally {
         setLoading(false);
@@ -54,7 +56,7 @@ const UserList: React.FC = () => {
     };
 
     load();
-  }, [apiUrl]);
+  }, [apiUrl, show]);
 
   const totalPages = Math.max(1, Math.ceil(users.length / USERS_PER_PAGE));
   const currentUsers = users.slice(
@@ -74,21 +76,17 @@ const UserList: React.FC = () => {
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm("Are you sure you want to delete this user?");
     if (!confirmed) return;
-  
+
     try {
-      const response = await fetch(`${apiUrl}/user/${id}`, {
-        method: "DELETE",
-      });
-  
-      if (!response.ok) {
-        throw new Error("Failed to delete user");
-      }
-  
+      const response = await fetch(`${apiUrl}/user/${id}`, { method: "DELETE" });
+
+      if (!response.ok) throw new Error("Failed to delete user");
+
       setUsers((prev) => prev.filter((u) => u.id !== id));
-      alert("User deleted successfully!");
+      show("User deleted successfully!", "success"); 
     } catch (error) {
       console.error(error);
-      alert("Error deleting user. Please try again.");
+      show("Error deleting user. Please try again.", "error"); 
     }
   };
 
@@ -97,12 +95,11 @@ const UserList: React.FC = () => {
     setEditedUser({ ...user });
   };
 
-  // handleSave function with PUT request
   const handleSave = async () => {
     if (editingId === null) return;
 
     if (!editedUser.fullName || !editedUser.email) {
-      alert("Name and Email are required.");
+      show("Name and Email are required.", "error");
       return;
     }
 
@@ -112,26 +109,22 @@ const UserList: React.FC = () => {
     } as User;
 
     try {
-      // PUT request to backend API
       const res = await fetch(`${apiUrl}/user/${editingId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedUser),
       });
 
-      if (!res.ok) {
-        throw new Error(`Failed to update user: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`Failed to update user: ${res.status}`);
 
-      // Update local state
       const next = users.map((u) =>
         u.id === editingId ? updatedUser : u
       );
       persist(next);
-      alert("✅ User updated successfully on the server!");
+      show("User updated successfully!", "success"); 
     } catch (err) {
       console.error("Error updating user:", err);
-      alert("❌ Failed to update user on server.");
+      show("Failed to update user.", "error"); 
     } finally {
       setEditingId(null);
       setEditedUser({});
@@ -272,7 +265,6 @@ const UserList: React.FC = () => {
         </tbody>
       </table>
 
-      {/* Pagination */}
       <div className={styles.pagination}>
         <button
           onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}

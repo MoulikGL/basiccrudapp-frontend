@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Signup.css";
 import { Link, useNavigate } from "react-router-dom";
+import { useNotification } from "../NotificationProvider";
 
 const Signup: React.FC = () => {
   const [fullName, setFullName] = useState("");
@@ -11,12 +12,13 @@ const Signup: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+  const { show } = useNotification(); 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      show("Passwords do not match!", "error"); 
       return;
     }
 
@@ -31,10 +33,10 @@ const Signup: React.FC = () => {
     const data = await response.json();
 
     if (response.ok) {
-      alert("Signup successful!");
+      show("Signup successful!", "success");
       navigate("/login");
     } else {
-      alert(data.message || "Signup failed");
+      show(data.message || "Signup failed", "error"); 
     }
   };
 

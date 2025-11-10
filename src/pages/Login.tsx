@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import "./Login.css";
 import { Link, useNavigate } from "react-router-dom";
+import { useNotification } from "../NotificationProvider";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { show } = useNotification(); 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,10 +22,10 @@ const Login: React.FC = () => {
 
     const data = await response.json();
     if (response.ok) {
-      alert(`Welcome back, ${data.user.fullName}!`);
+      show(`Welcome back, ${data.user.fullName}!`, "success"); 
       navigate("/products");
     } else {
-      alert(data.message || "Login failed");
+      show(data.message || "Login failed", "error");
     }
   };
 
