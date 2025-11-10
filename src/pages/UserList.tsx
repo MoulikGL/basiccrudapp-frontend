@@ -71,14 +71,24 @@ const UserList: React.FC = () => {
     }
   };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm("Delete this user?")) {
-      persist(users.filter((u) => u.id !== id));
-      const newTotalPages = Math.max(
-        1,
-        Math.ceil((users.length - 1) / USERS_PER_PAGE)
-      );
-      if (currentPage > newTotalPages) setCurrentPage(newTotalPages);
+  const handleDelete = async (id: number) => {
+    const confirmed = window.confirm("Are you sure you want to delete this user?");
+    if (!confirmed) return;
+  
+    try {
+      const response = await fetch(`${apiUrl}/user/${id}`, {
+        method: "DELETE",
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to delete user");
+      }
+  
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+      alert("User deleted successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Error deleting user. Please try again.");
     }
   };
 
