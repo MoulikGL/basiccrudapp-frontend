@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Signup.css";
+import { Box, Container, Paper, Typography, TextField, Button, Link as MuiLink, Stack } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { useNotification } from "../NotificationProvider";
 
@@ -12,13 +12,13 @@ const Signup: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
-  const { show } = useNotification(); 
+  const { show } = useNotification();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      show("Passwords do not match!", "error"); 
+      show("Passwords do not match!", "error");
       return;
     }
 
@@ -27,7 +27,7 @@ const Signup: React.FC = () => {
     const response = await fetch(`${apiUrl}/user/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullName, phoneNumber, address, company, email, password }),
+      body: JSON.stringify({ fullName, phoneNumber, address, company, email, password })
     });
 
     const data = await response.json();
@@ -36,104 +36,102 @@ const Signup: React.FC = () => {
       show("Signup successful!", "success");
       navigate("/login");
     } else {
-      show(data.message || "Signup failed", "error"); 
+      show(data.message || "Signup failed", "error");
     }
   };
 
   return (
-    <div className="signup-page">
-      <div className="signup-box">
-        <h2 className="signup-title">Create Account ✨</h2>
-        <p className="signup-subtitle">Join us and get started today!</p>
+    <Container maxWidth="sm" sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <Paper elevation={6} sx={{ width: "100%", p: 4, borderRadius: 3 }}>
+        <Typography variant="h5" align="center" sx={{ fontWeight: 600, mb: 0.5 }}>
+          Create Account ✨
+        </Typography>
+        <Typography align="center" color="text.secondary" sx={{ mb: 3 }}>
+          Join us and get started today!
+        </Typography>
 
-        <form className="signup-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Full Name</label>
-            <input
-              type="text"
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Stack spacing={2}>
+            <TextField
+              label="Full Name"
               placeholder="Enter your full name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
+              fullWidth
             />
-          </div>
 
-          <div className="form-group">
-            <label>Phone Number</label>
-            <input
-              type="text"
+            <TextField
+              label="Phone Number"
               placeholder="Enter your phone number"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               required
+              fullWidth
             />
-          </div>
 
-          <div className="form-group">
-            <label>Address</label>
-            <input
-              type="text"
+            <TextField
+              label="Address"
               placeholder="Enter your address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               required
+              fullWidth
             />
-          </div>
 
-          <div className="form-group">
-            <label>Company</label>
-            <input
-              type="text"
+            <TextField
+              label="Company"
               placeholder="Enter your company name"
               value={company}
               onChange={(e) => setCompany(e.target.value)}
               required
+              fullWidth
             />
-          </div>
 
-          <div className="form-group">
-            <label>Email</label>
-            <input
+            <TextField
+              label="Email"
               type="email"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              fullWidth
             />
-          </div>
 
-          <div className="form-group">
-            <label>Password</label>
-            <input
+            <TextField
+              label="Password"
               type="password"
               placeholder="Create a password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              fullWidth
             />
-          </div>
 
-          <div className="form-group">
-            <label>Confirm Password</label>
-            <input
+            <TextField
+              label="Confirm Password"
               type="password"
               placeholder="Re-enter password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
+              fullWidth
             />
-          </div>
 
-          <button type="submit" className="signup-button">
-            Sign Up
-          </button>
+            <Button type="submit" variant="contained" size="large" fullWidth>
+              Sign Up
+            </Button>
 
-          <p className="login-text">
-            Already have an account? <Link to="/login">Log In</Link>
-          </p>
-        </form>
-      </div>
-    </div>
+            <Typography align="center" variant="body2" sx={{ mt: 1 }}>
+              Already have an account?{" "}
+              <MuiLink component={Link} to="/login" underline="hover">
+                Log In
+              </MuiLink>
+            </Typography>
+          </Stack>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

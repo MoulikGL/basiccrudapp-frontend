@@ -1,14 +1,11 @@
-/* Page background */
-.login-page {
+  .login-page {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #6b73ff 0%, #9295c7 100%);
     font-family: "Poppins", sans-serif;
   }
-  
-  /* Box container */
+
   .login-box {
     background: #fff;
     padding: 40px 35px;
@@ -18,8 +15,7 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     text-align: center;
   }
-  
-  /* Title */
+
   .login-title {
     font-size: 1.8rem;
     font-weight: 600;
@@ -32,15 +28,13 @@
     font-size: 0.95rem;
     margin-bottom: 25px;
   }
-  
-  /* Form */
+
   .login-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
-  }
-  
-  /* Input fields */
+  } 
+
   .form-group {
     display: flex;
     flex-direction: column;
@@ -68,7 +62,6 @@
     box-shadow: 0 0 4px rgba(107, 115, 255, 0.4);
   }
   
-  /* Button */
   .login-button {
     background: #6b73ff;
     color: #fff;
@@ -84,7 +77,6 @@
     background: #5861e0;
   }
   
-  /* Signup link */
   .signup-text {
     margin-top: 15px;
     font-size: 0.9rem;
@@ -100,4 +92,3 @@
   .signup-text a:hover {
     text-decoration: underline;
   }
-  
