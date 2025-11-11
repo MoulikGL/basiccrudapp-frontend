@@ -41,12 +41,12 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <Paper elevation={6} sx={{ width: "100%", p: 4, borderRadius: 3 }}>
-        <Typography variant="h5" align="center" sx={{ fontWeight: 600, mb: 0.5 }}>
+    <Container maxWidth = "sm" sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <Paper elevation={6} sx={{ width: "100%", p: 4, borderRadius: 2 }}>
+        <Typography variant="h6" align="center" sx={{ fontWeight: 600 }}>
           Create Account ✨
         </Typography>
-        <Typography align="center" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography align="center" color="grey" sx={{ mb: 2 }}>
           Join us and get started today!
         </Typography>
 
@@ -58,7 +58,6 @@ const Signup: React.FC = () => {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
-              fullWidth
             />
 
             <TextField
@@ -67,7 +66,6 @@ const Signup: React.FC = () => {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               required
-              fullWidth
             />
 
             <TextField
@@ -76,7 +74,6 @@ const Signup: React.FC = () => {
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               required
-              fullWidth
             />
 
             <TextField
@@ -85,7 +82,6 @@ const Signup: React.FC = () => {
               value={company}
               onChange={(e) => setCompany(e.target.value)}
               required
-              fullWidth
             />
 
             <TextField
@@ -95,7 +91,6 @@ const Signup: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              fullWidth
             />
 
             <TextField
@@ -105,7 +100,6 @@ const Signup: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              fullWidth
             />
 
             <TextField
@@ -115,14 +109,13 @@ const Signup: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              fullWidth
             />
 
-            <Button type="submit" variant="contained" size="large" fullWidth>
+            <Button type="submit" variant="contained" size="large">
               Sign Up
             </Button>
 
-            <Typography align="center" variant="body2" sx={{ mt: 1 }}>
+            <Typography align="center" variant="body2">
               Already have an account?{" "}
               <MuiLink component={Link} to="/login" underline="hover">
                 Log In
