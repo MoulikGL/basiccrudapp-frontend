@@ -12,7 +12,6 @@ interface User {
 }
 
 const USERS_PER_PAGE = 5;
-const STORAGE_KEY = "userlist_local_cache_v1";
 
 const UserList: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -20,73 +19,68 @@ const UserList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
-  const apiUrl = import.meta.env.VITE_API_BASE_URL;
-  const { show } = useNotification(); 
+  const apiUrl = (import.meta.env.VITE_API_BASE_URL as string) || "";
+  const { show } = useNotification();
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const cached = JSON.parse(raw) as User[];
-          setUsers(cached);
-          return;
-        }
+  const load = async () => {
+    if (!apiUrl) {
+      console.error("VITE_API_BASE_URL is not defined.");
+      show?.("API base URL is not configured.", "error");
+      setUsers([]);
+      setLoading(false);
+      return;
+    }
 
-        const res = await fetch(`${apiUrl}/user`);
-        if (!res.ok) {
-          show("Failed to fetch users from API", "error");
-          setUsers([]);
-          return;
-        }
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : data?.data ?? [];
-        setUsers(list);
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-        } catch {}
-      } catch (err) {
-        console.error("Error loading users:", err);
-        show("Error loading users", "error");
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiUrl}/user`);
+      if (!res.ok) {
+        show?.("Failed to fetch users from API", "error");
         setUsers([]);
-      } finally {
-        setLoading(false);
+        return;
       }
-    };
-
-    load();
-  }, [apiUrl, show]);
+      const data = await res.json().catch(() => null);
+      const list = Array.isArray(data) ? data : data?.data ?? [];
+      setUsers(Array.isArray(list) ? list : []);
+    } catch (err) {
+      console.error("Error loading users:", err);
+      show?.("Error loading users", "error");
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    load(); 
+  }, [apiUrl]);
 
   const totalPages = Math.max(1, Math.ceil(users.length / USERS_PER_PAGE));
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [users.length, totalPages]);
   const currentUsers = users.slice(
     (currentPage - 1) * USERS_PER_PAGE,
     currentPage * USERS_PER_PAGE
   );
 
-  const persist = (next: User[]) => {
-    setUsers(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch (err) {
-      console.warn("Could not save to localStorage", err);
-    }
-  };
-
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm("Are you sure you want to delete this user?");
     if (!confirmed) return;
+    if (!apiUrl) {
+      show?.("API base URL is not configured.", "error");
+      return;
+    }
 
     try {
       const response = await fetch(`${apiUrl}/user/${id}`, { method: "DELETE" });
-
       if (!response.ok) throw new Error("Failed to delete user");
-
-      setUsers((prev) => prev.filter((u) => u.id !== id));
-      show("User deleted successfully!", "success"); 
+      show?.("User deleted successfully!", "success");
+      await load(); 
     } catch (error) {
       console.error(error);
-      show("Error deleting user. Please try again.", "error"); 
+      show?.("Error deleting user. Please try again.", "error");
     }
   };
 
@@ -99,15 +93,20 @@ const UserList: React.FC = () => {
     if (editingId === null) return;
 
     if (!editedUser.fullName || !editedUser.email) {
-      show("Name and Email are required.", "error");
+      show?.("Name and Email are required.", "error");
       return;
     }
 
-    const updatedUser = {
-      ...users.find((u) => u.id === editingId),
+    const original = users.find((u) => u.id === editingId) || ({} as User);
+    const updatedUser: User = {
+      ...original,
       ...editedUser,
     } as User;
-    //comment 
+
+    if (!apiUrl) {
+      show?.("API base URL is not configured.", "error");
+      return;
+    }
 
     try {
       const res = await fetch(`${apiUrl}/user/${editingId}`, {
@@ -118,14 +117,11 @@ const UserList: React.FC = () => {
 
       if (!res.ok) throw new Error(`Failed to update user: ${res.status}`);
 
-      const next = users.map((u) =>
-        u.id === editingId ? updatedUser : u
-      );
-      persist(next);
-      show("User updated successfully!", "success"); 
+      show?.("User updated successfully!", "success");
+      await load(); 
     } catch (err) {
       console.error("Error updating user:", err);
-      show("Failed to update user.", "error"); 
+      show?.("Failed to update user.", "error");
     } finally {
       setEditingId(null);
       setEditedUser({});
@@ -156,6 +152,7 @@ const UserList: React.FC = () => {
               <td>
                 {editingId === user.id ? (
                   <input
+                    type="text"
                     value={editedUser.fullName ?? ""}
                     onChange={(e) =>
                       setEditedUser({
@@ -171,6 +168,7 @@ const UserList: React.FC = () => {
               <td>
                 {editingId === user.id ? (
                   <input
+                    type="email"
                     value={editedUser.email ?? ""}
                     onChange={(e) =>
                       setEditedUser({
@@ -186,6 +184,7 @@ const UserList: React.FC = () => {
               <td>
                 {editingId === user.id ? (
                   <input
+                    type="text"
                     value={editedUser.phoneNumber ?? ""}
                     onChange={(e) =>
                       setEditedUser({
@@ -201,6 +200,7 @@ const UserList: React.FC = () => {
               <td>
                 {editingId === user.id ? (
                   <input
+                    type="text"
                     value={editedUser.address ?? ""}
                     onChange={(e) =>
                       setEditedUser({
@@ -216,6 +216,7 @@ const UserList: React.FC = () => {
               <td>
                 {editingId === user.id ? (
                   <input
+                    type="text"
                     value={editedUser.company ?? ""}
                     onChange={(e) =>
                       setEditedUser({
@@ -246,16 +247,10 @@ const UserList: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <button
-                      className={styles.edit}
-                      onClick={() => handleEdit(user)}
-                    >
+                    <button className={styles.edit} onClick={() => handleEdit(user)}>
                       ✏️ Edit
                     </button>
-                    <button
-                      className={styles.delete}
-                      onClick={() => handleDelete(user.id)}
-                    >
+                    <button className={styles.delete} onClick={() => handleDelete(user.id)}>
                       🗑️ Delete
                     </button>
                   </>
@@ -276,7 +271,7 @@ const UserList: React.FC = () => {
 
         {[...Array(totalPages)].map((_, i) => (
           <button
-            key={i + 1}
+            key={i}
             onClick={() => setCurrentPage(i + 1)}
             className={i + 1 === currentPage ? styles.activePage : ""}
           >
