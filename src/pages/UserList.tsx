@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import styles from "./UserList.module.css";
-import { useNotification } from "../NotificationProvider";
 
 interface User {
   id: number;
@@ -20,8 +19,8 @@ const UserList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
+  const [searchTerm, setSearchTerm] = useState(""); // 🔍 new state
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
-  const { show } = useNotification(); 
 
   useEffect(() => {
     const load = async () => {
@@ -36,7 +35,7 @@ const UserList: React.FC = () => {
 
         const res = await fetch(`${apiUrl}/user`);
         if (!res.ok) {
-          show("Failed to fetch users from API", "error");
+          console.warn("Failed to fetch users from API, using empty list.");
           setUsers([]);
           return;
         }
@@ -48,7 +47,6 @@ const UserList: React.FC = () => {
         } catch {}
       } catch (err) {
         console.error("Error loading users:", err);
-        show("Error loading users", "error");
         setUsers([]);
       } finally {
         setLoading(false);
@@ -56,10 +54,23 @@ const UserList: React.FC = () => {
     };
 
     load();
-  }, [apiUrl, show]);
+  }, [apiUrl]);
 
   const totalPages = Math.max(1, Math.ceil(users.length / USERS_PER_PAGE));
-  const currentUsers = users.slice(
+
+  // 🔍 Filter users before pagination
+  const filteredUsers = users.filter((u) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      u.fullName.toLowerCase().includes(term) ||
+      u.email.toLowerCase().includes(term) ||
+      u.phoneNumber.toLowerCase().includes(term) ||
+      u.address.toLowerCase().includes(term) ||
+      u.company.toLowerCase().includes(term)
+    );
+  });
+
+  const currentUsers = filteredUsers.slice(
     (currentPage - 1) * USERS_PER_PAGE,
     currentPage * USERS_PER_PAGE
   );
@@ -78,15 +89,18 @@ const UserList: React.FC = () => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`${apiUrl}/user/${id}`, { method: "DELETE" });
+      const response = await fetch(`${apiUrl}/user/${id}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) throw new Error("Failed to delete user");
 
-      setUsers((prev) => prev.filter((u) => u.id !== id));
-      show("User deleted successfully!", "success"); 
+      const next = users.filter((u) => u.id !== id);
+      persist(next);
+      alert("User deleted successfully!");
     } catch (error) {
       console.error(error);
-      show("Error deleting user. Please try again.", "error"); 
+      alert("Error deleting user. Please try again.");
     }
   };
 
@@ -99,7 +113,7 @@ const UserList: React.FC = () => {
     if (editingId === null) return;
 
     if (!editedUser.fullName || !editedUser.email) {
-      show("Name and Email are required.", "error");
+      alert("Name and Email are required.");
       return;
     }
 
@@ -117,14 +131,12 @@ const UserList: React.FC = () => {
 
       if (!res.ok) throw new Error(`Failed to update user: ${res.status}`);
 
-      const next = users.map((u) =>
-        u.id === editingId ? updatedUser : u
-      );
+      const next = users.map((u) => (u.id === editingId ? updatedUser : u));
       persist(next);
-      show("User updated successfully!", "success"); 
+      alert("✅ User updated successfully on the server!");
     } catch (err) {
       console.error("Error updating user:", err);
-      show("Failed to update user.", "error"); 
+      alert("❌ Failed to update user on server.");
     } finally {
       setEditingId(null);
       setEditedUser({});
@@ -136,6 +148,21 @@ const UserList: React.FC = () => {
   return (
     <div className={styles.card}>
       <h2 className={styles.title}>User Management</h2>
+
+      {/* 🔍 Search Bar */}
+      <div className={styles.searchContainer}>
+        <input
+          type="text"
+          placeholder="Search users..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // reset pagination when searching
+          }}
+          className={styles.searchInput}
+        />
+      </div>
+
       <table className={styles.table}>
         <thead>
           <tr>
@@ -149,122 +176,89 @@ const UserList: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {currentUsers.map((user) => (
-            <tr key={user.id}>
-              <td>{user.id}</td>
-              <td>
-                {editingId === user.id ? (
-                  <input
-                    value={editedUser.fullName ?? ""}
-                    onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        fullName: e.target.value,
-                      })
-                    }
-                  />
-                ) : (
-                  user.fullName
-                )}
-              </td>
-              <td>
-                {editingId === user.id ? (
-                  <input
-                    value={editedUser.email ?? ""}
-                    onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        email: e.target.value,
-                      })
-                    }
-                  />
-                ) : (
-                  user.email
-                )}
-              </td>
-              <td>
-                {editingId === user.id ? (
-                  <input
-                    value={editedUser.phoneNumber ?? ""}
-                    onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        phoneNumber: e.target.value,
-                      })
-                    }
-                  />
-                ) : (
-                  user.phoneNumber
-                )}
-              </td>
-              <td>
-                {editingId === user.id ? (
-                  <input
-                    value={editedUser.address ?? ""}
-                    onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        address: e.target.value,
-                      })
-                    }
-                  />
-                ) : (
-                  user.address
-                )}
-              </td>
-              <td>
-                {editingId === user.id ? (
-                  <input
-                    value={editedUser.company ?? ""}
-                    onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        company: e.target.value,
-                      })
-                    }
-                  />
-                ) : (
-                  user.company
-                )}
-              </td>
-              <td className={styles.actions}>
-                {editingId === user.id ? (
-                  <>
-                    <button className={styles.save} onClick={handleSave}>
-                      💾 Save
-                    </button>
-                    <button
-                      className={styles.cancel}
-                      onClick={() => {
-                        setEditingId(null);
-                        setEditedUser({});
-                      }}
-                    >
-                      ✖ Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className={styles.edit}
-                      onClick={() => handleEdit(user)}
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      className={styles.delete}
-                      onClick={() => handleDelete(user.id)}
-                    >
-                      🗑️ Delete
-                    </button>
-                  </>
-                )}
+          {currentUsers.length === 0 ? (
+            <tr>
+              <td colSpan={7} style={{ textAlign: "center", color: "#777" }}>
+                No users found
               </td>
             </tr>
-          ))}
+          ) : (
+            currentUsers.map((user) => (
+              <tr key={user.id}>
+                <td>{user.id}</td>
+                <td>
+                  {editingId === user.id ? (
+                    <input
+                      value={editedUser.fullName ?? ""}
+                      onChange={(e) =>
+                        setEditedUser({
+                          ...editedUser,
+                          fullName: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    user.fullName
+                  )}
+                </td>
+                <td>
+                  {editingId === user.id ? (
+                    <input
+                      value={editedUser.email ?? ""}
+                      onChange={(e) =>
+                        setEditedUser({
+                          ...editedUser,
+                          email: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    user.email
+                  )}
+                </td>
+                <td>{user.phoneNumber}</td>
+                <td>{user.address}</td>
+                <td>{user.company}</td>
+                <td className={styles.actions}>
+                  {editingId === user.id ? (
+                    <>
+                      <button className={styles.save} onClick={handleSave}>
+                        💾 Save
+                      </button>
+                      <button
+                        className={styles.cancel}
+                        onClick={() => {
+                          setEditingId(null);
+                          setEditedUser({});
+                        }}
+                      >
+                        ✖ Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className={styles.edit}
+                        onClick={() => handleEdit(user)}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        className={styles.delete}
+                        onClick={() => handleDelete(user.id)}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 
+      {/* Pagination */}
       <div className={styles.pagination}>
         <button
           onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
@@ -273,19 +267,27 @@ const UserList: React.FC = () => {
           ◀ Prev
         </button>
 
-        {[...Array(totalPages)].map((_, i) => (
-          <button
-            key={i + 1}
-            onClick={() => setCurrentPage(i + 1)}
-            className={i + 1 === currentPage ? styles.activePage : ""}
-          >
-            {i + 1}
-          </button>
-        ))}
+        {[...Array(Math.ceil(filteredUsers.length / USERS_PER_PAGE))].map(
+          (_, i) => (
+            <button
+              key={i + 1}
+              onClick={() => setCurrentPage(i + 1)}
+              className={i + 1 === currentPage ? styles.activePage : ""}
+            >
+              {i + 1}
+            </button>
+          )
+        )}
 
         <button
-          onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-          disabled={currentPage === totalPages}
+          onClick={() =>
+            setCurrentPage((p) =>
+              Math.min(p + 1, Math.ceil(filteredUsers.length / USERS_PER_PAGE))
+            )
+          }
+          disabled={
+            currentPage === Math.ceil(filteredUsers.length / USERS_PER_PAGE)
+          }
         >
           Next ▶
         </button>

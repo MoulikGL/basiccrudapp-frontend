@@ -101,3 +101,20 @@
     background-color: #2563eb !important;
     color: white !important;
   }
+  .searchContainer {
+    margin-bottom: 12px;
+    text-align: right;
+  }
+  
+  .searchInput {
+    padding: 6px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 250px;
+  }
+  .searchInput:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+  
