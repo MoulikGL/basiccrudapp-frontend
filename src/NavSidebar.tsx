@@ -1,16 +1,20 @@
 import { Drawer, List, ListItem, ListItemButton, ListItemText, ListItemIcon } from "@mui/material";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import { FaUser, FaSimCard, FaUserCheck, FaHistory } from "react-icons/fa";
-
-const items = [
-  { to: "/login", label: "Login", icon: <FaUserCheck /> },
-  { to: "/signup", label: "Signup", icon: <FaUser /> },
-  { to: "/products", label: "Products", icon: <FaSimCard /> },
-  { to: "/userlist", label: "User List", icon: <FaHistory /> },
-];
+import { useAuth } from "./auth/AuthProvider";
 
 const NavSidebar: React.FC = () => {
+  const { user } = useAuth();
   const location = useLocation();
+  const items = user
+    ? [
+        { to: "/products", label: "Products", icon: <FaSimCard /> },
+        { to: "/userlist", label: "User List", icon: <FaHistory /> },
+      ]
+    : [
+        { to: "/login", label: "Login", icon: <FaUserCheck /> },
+        { to: "/signup", label: "Signup", icon: <FaUser /> },
+      ];
 
   return (
     <Drawer
@@ -35,7 +39,8 @@ const NavSidebar: React.FC = () => {
               to={it.to}
               sx={{
                 color: "white",
-                backgroundColor: location.pathname === it.to ? "#6A6D70" : "transparent",
+                backgroundColor:
+                  location.pathname === it.to ? "#6A6D70" : "transparent",
               }}
             >
               <ListItemIcon sx={{ color: "white", minWidth: 40 }}>

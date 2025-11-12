@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import "./Login.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useNotification } from "../NotificationProvider";
+import { useAuth } from "../auth/AuthProvider";
 
 const Login: React.FC = () => {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -22,6 +24,7 @@ const Login: React.FC = () => {
 
     const data = await response.json();
     if (response.ok) {
+      login(data.user, data.token);
       show(`Welcome back, ${data.user.fullName}!`, "success"); 
       navigate("/products");
     } else {

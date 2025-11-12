@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import styles from "./UserList.module.css";
 import { useNotification } from "../NotificationProvider";
+import { useAuth } from "../auth/AuthProvider";
+import authFetchOptions from "../utils/authFetchOptions";
 
 interface User {
   id: number;
@@ -9,6 +11,7 @@ interface User {
   phoneNumber: string;
   address: string;
   company: string;
+  isAdmin: boolean;
 }
 
 const USERS_PER_PAGE = 5;
@@ -19,13 +22,14 @@ const UserList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
-  const apiUrl = import.meta.env.VITE_API_BASE_URL;
+  const { user: currentUser, token } = useAuth();
   const { show } = useNotification();
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
   const load = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/user`);
+      const res = await fetch(`${apiUrl}/user`, authFetchOptions(token));
       if (!res.ok) {
         show("Failed to fetch users from API", "error");
         setUsers([]);
@@ -45,7 +49,7 @@ const UserList: React.FC = () => {
 
   useEffect(() => {
     load();
-  }, [apiUrl, show]);
+  }, [apiUrl]);
 
   const totalPages = Math.max(1, Math.ceil(users.length / USERS_PER_PAGE));
 
@@ -67,9 +71,10 @@ const UserList: React.FC = () => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`${apiUrl}/user/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${apiUrl}/user/${id}`,
+        authFetchOptions(token, "DELETE")
+      );
       if (!response.ok) throw new Error("Failed to delete user");
       show("User deleted successfully!", "success");
       await load();
@@ -98,12 +103,10 @@ const UserList: React.FC = () => {
     } as User;
 
     try {
-      const res = await fetch(`${apiUrl}/user/${editingId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedUser),
-      });
-
+      const res = await fetch(
+        `${apiUrl}/user/${editingId}`,
+        authFetchOptions(token, "PUT", updatedUser)
+      );
       if (!res.ok) throw new Error(`Failed to update user: ${res.status}`);
 
       show("User updated successfully!", "success");
@@ -137,12 +140,12 @@ const UserList: React.FC = () => {
         </thead>
 
         <tbody>
-          {currentUsers.map((user) => (
-            <tr key={user.id}>
-              <td>{user.id}</td>
+          {currentUsers.map((u) => (
+            <tr key={u.id}>
+              <td>{u.id}</td>
 
               <td>
-                {editingId === user.id ? (
+                {editingId === u.id ? (
                   <input
                     type="text"
                     value={editedUser.fullName ?? ""}
@@ -151,12 +154,12 @@ const UserList: React.FC = () => {
                     }
                   />
                 ) : (
-                  user.fullName
+                  u.fullName
                 )}
               </td>
 
               <td>
-                {editingId === user.id ? (
+                {editingId === u.id ? (
                   <input
                     type="email"
                     value={editedUser.email ?? ""}
@@ -165,12 +168,12 @@ const UserList: React.FC = () => {
                     }
                   />
                 ) : (
-                  user.email
+                  u.email
                 )}
               </td>
 
               <td>
-                {editingId === user.id ? (
+                {editingId === u.id ? (
                   <input
                     type="text"
                     value={editedUser.phoneNumber ?? ""}
@@ -182,12 +185,12 @@ const UserList: React.FC = () => {
                     }
                   />
                 ) : (
-                  user.phoneNumber
+                  u.phoneNumber
                 )}
               </td>
 
               <td>
-                {editingId === user.id ? (
+                {editingId === u.id ? (
                   <input
                     type="text"
                     value={editedUser.address ?? ""}
@@ -196,12 +199,12 @@ const UserList: React.FC = () => {
                     }
                   />
                 ) : (
-                  user.address
+                  u.address
                 )}
               </td>
 
               <td>
-                {editingId === user.id ? (
+                {editingId === u.id ? (
                   <input
                     type="text"
                     value={editedUser.company ?? ""}
@@ -210,12 +213,12 @@ const UserList: React.FC = () => {
                     }
                   />
                 ) : (
-                  user.company
+                  u.company
                 )}
               </td>
 
               <td className={styles.actions}>
-                {editingId === user.id ? (
+                {editingId === u.id ? (
                   <>
                     <button className={styles.save} onClick={handleSave}>
                       💾 Save
@@ -232,18 +235,38 @@ const UserList: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <button
-                      className={styles.edit}
-                      onClick={() => handleEdit(user)}
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      className={styles.delete}
-                      onClick={() => handleDelete(user.id)}
-                    >
-                      🗑️ Delete
-                    </button>
+                    {currentUser?.id === u.id || currentUser?.isAdmin ? (
+                      <button
+                        className={styles.edit}
+                        onClick={() => handleEdit(u)}
+                      >
+                        ✏️ Edit
+                      </button>
+                    ) : (
+                      <button
+                        className={styles.edit}
+                        disabled
+                        style={{ opacity: 0.4, cursor: "not-allowed" }}
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                    {currentUser?.isAdmin ? (
+                      <button
+                        className={styles.delete}
+                        onClick={() => handleDelete(u.id)}
+                      >
+                        🗑️ Delete
+                      </button>
+                    ) : (
+                      <button
+                        className={styles.delete}
+                        disabled
+                        style={{ opacity: 0.4, cursor: "not-allowed" }}
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
                   </>
                 )}
               </td>
