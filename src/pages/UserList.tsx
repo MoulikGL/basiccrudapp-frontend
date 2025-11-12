@@ -19,68 +19,63 @@ const UserList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
-  const apiUrl = (import.meta.env.VITE_API_BASE_URL as string) || "";
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
   const { show } = useNotification();
 
   const load = async () => {
-    if (!apiUrl) {
-      console.error("VITE_API_BASE_URL is not defined.");
-      show?.("API base URL is not configured.", "error");
-      setUsers([]);
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     try {
       const res = await fetch(`${apiUrl}/user`);
       if (!res.ok) {
-        show?.("Failed to fetch users from API", "error");
+        show("Failed to fetch users from API", "error");
         setUsers([]);
         return;
       }
-      const data = await res.json().catch(() => null);
+      const data = await res.json();
       const list = Array.isArray(data) ? data : data?.data ?? [];
-      setUsers(Array.isArray(list) ? list : []);
+      setUsers(list);
     } catch (err) {
       console.error("Error loading users:", err);
-      show?.("Error loading users", "error");
+      show("Error loading users", "error");
       setUsers([]);
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
-    load(); 
-  }, [apiUrl]);
+    load();
+  }, [apiUrl, show]);
 
   const totalPages = Math.max(1, Math.ceil(users.length / USERS_PER_PAGE));
+
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
   }, [users.length, totalPages]);
+
   const currentUsers = users.slice(
     (currentPage - 1) * USERS_PER_PAGE,
     currentPage * USERS_PER_PAGE
   );
 
   const handleDelete = async (id: number) => {
-    const confirmed = window.confirm("Are you sure you want to delete this user?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
     if (!confirmed) return;
-    if (!apiUrl) {
-      show?.("API base URL is not configured.", "error");
-      return;
-    }
 
     try {
-      const response = await fetch(`${apiUrl}/user/${id}`, { method: "DELETE" });
+      const response = await fetch(`${apiUrl}/user/${id}`, {
+        method: "DELETE",
+      });
       if (!response.ok) throw new Error("Failed to delete user");
-      show?.("User deleted successfully!", "success");
-      await load(); 
+      show("User deleted successfully!", "success");
+      await load();
     } catch (error) {
       console.error(error);
-      show?.("Error deleting user. Please try again.", "error");
+      show("Error deleting user. Please try again.", "error");
     }
   };
 
@@ -93,21 +88,14 @@ const UserList: React.FC = () => {
     if (editingId === null) return;
 
     if (!editedUser.fullName || !editedUser.email) {
-      show?.("Name and Email are required.", "error");
+      show("Name and Email are required.", "error");
       return;
     }
 
-    const original = users.find((u) => u.id === editingId) || ({} as User);
-    const updatedUser: User = {
-      ...original,
+    const updatedUser = {
+      ...users.find((u) => u.id === editingId),
       ...editedUser,
     } as User;
-    //comment 
-
-    if (!apiUrl) {
-      show?.("API base URL is not configured.", "error");
-      return;
-    }
 
     try {
       const res = await fetch(`${apiUrl}/user/${editingId}`, {
@@ -118,11 +106,11 @@ const UserList: React.FC = () => {
 
       if (!res.ok) throw new Error(`Failed to update user: ${res.status}`);
 
-      show?.("User updated successfully!", "success");
-      await load(); 
+      show("User updated successfully!", "success");
+      await load();
     } catch (err) {
       console.error("Error updating user:", err);
-      show?.("Failed to update user.", "error");
+      show("Failed to update user.", "error");
     } finally {
       setEditingId(null);
       setEditedUser({});
@@ -134,6 +122,7 @@ const UserList: React.FC = () => {
   return (
     <div className={styles.card}>
       <h2 className={styles.title}>User Management</h2>
+
       <table className={styles.table}>
         <thead>
           <tr>
@@ -146,42 +135,40 @@ const UserList: React.FC = () => {
             <th>Actions</th>
           </tr>
         </thead>
+
         <tbody>
           {currentUsers.map((user) => (
             <tr key={user.id}>
               <td>{user.id}</td>
+
               <td>
                 {editingId === user.id ? (
                   <input
                     type="text"
                     value={editedUser.fullName ?? ""}
                     onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        fullName: e.target.value,
-                      })
+                      setEditedUser({ ...editedUser, fullName: e.target.value })
                     }
                   />
                 ) : (
                   user.fullName
                 )}
               </td>
+
               <td>
                 {editingId === user.id ? (
                   <input
                     type="email"
                     value={editedUser.email ?? ""}
                     onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        email: e.target.value,
-                      })
+                      setEditedUser({ ...editedUser, email: e.target.value })
                     }
                   />
                 ) : (
                   user.email
                 )}
               </td>
+
               <td>
                 {editingId === user.id ? (
                   <input
@@ -198,38 +185,35 @@ const UserList: React.FC = () => {
                   user.phoneNumber
                 )}
               </td>
+
               <td>
                 {editingId === user.id ? (
                   <input
                     type="text"
                     value={editedUser.address ?? ""}
                     onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        address: e.target.value,
-                      })
+                      setEditedUser({ ...editedUser, address: e.target.value })
                     }
                   />
                 ) : (
                   user.address
                 )}
               </td>
+
               <td>
                 {editingId === user.id ? (
                   <input
                     type="text"
                     value={editedUser.company ?? ""}
                     onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        company: e.target.value,
-                      })
+                      setEditedUser({ ...editedUser, company: e.target.value })
                     }
                   />
                 ) : (
                   user.company
                 )}
               </td>
+
               <td className={styles.actions}>
                 {editingId === user.id ? (
                   <>
@@ -248,10 +232,16 @@ const UserList: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <button className={styles.edit} onClick={() => handleEdit(user)}>
+                    <button
+                      className={styles.edit}
+                      onClick={() => handleEdit(user)}
+                    >
                       ✏️ Edit
                     </button>
-                    <button className={styles.delete} onClick={() => handleDelete(user.id)}>
+                    <button
+                      className={styles.delete}
+                      onClick={() => handleDelete(user.id)}
+                    >
                       🗑️ Delete
                     </button>
                   </>
@@ -272,7 +262,7 @@ const UserList: React.FC = () => {
 
         {[...Array(totalPages)].map((_, i) => (
           <button
-            key={i}
+            key={i + 1}
             onClick={() => setCurrentPage(i + 1)}
             className={i + 1 === currentPage ? styles.activePage : ""}
           >
