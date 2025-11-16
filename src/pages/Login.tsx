@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Login.css";
+import { Box, Container, Paper, Typography, TextField, Button, Link as MuiLink } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { useNotification } from "../NotificationProvider";
 import { useAuth } from "../auth/AuthProvider";
@@ -9,7 +9,7 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { show } = useNotification(); 
+  const { show } = useNotification();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,52 +25,55 @@ const Login: React.FC = () => {
     const data = await response.json();
     if (response.ok) {
       login(data.user, data.token);
-      show(`Welcome back, ${data.user.fullName}!`, "success"); 
+      show(`Welcome back, ${data.user.fullName}!`, "success");
       navigate("/products");
     } else {
-      show(data.message || "Login failed", "error");
+      show(data.message || "Login failed.", "error");
     }
   };
 
   return (
-    <div className="login-page">
-      <div className="login-box">
-        <h2 className="login-title">Welcome Back 👋</h2>
-        <p className="login-subtitle">Please log in to your account</p>
+    <Container maxWidth="xs" sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <Paper elevation={6} sx={{ width: "100%", p: 4, borderRadius: 2 }}>
+        <Typography variant="h6" align="center" sx={{ fontWeight: 600 }}>
+          Welcome Back 👋
+        </Typography>
+        <Typography align="center" color="grey" sx={{ mb: 2 }}>
+          Please log in to your account.
+        </Typography>
 
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <TextField
+            label="Email"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          <TextField
+            label="Password"
+            type="password"
+            placeholder="Create a password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-          <button type="submit" className="login-button">
-            Login
-          </button>
+          <Button type="submit" variant="contained" size="large">
+            Log In
+          </Button>
 
-          <p className="signup-text">
-            Don’t have an account? <Link to="/signup">Sign up</Link>
-          </p>
-        </form>
-      </div>
-    </div>
+          <Typography align="center" variant="body2">
+            Don’t have an account?{" "}
+            <MuiLink component={Link} to="/signup" underline="hover">
+              Sign Up
+            </MuiLink>
+          </Typography>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

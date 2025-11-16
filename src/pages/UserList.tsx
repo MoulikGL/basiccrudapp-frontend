@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import styles from "./UserList.module.css";
+import { Container, Paper, Typography, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Stack, CircularProgress, Tooltip, Box } from "@mui/material";
 import { useNotification } from "../NotificationProvider";
 import { useAuth } from "../auth/AuthProvider";
 import authFetchOptions from "../utils/authFetchOptions";
@@ -31,7 +31,7 @@ const UserList: React.FC = () => {
     try {
       const res = await fetch(`${apiUrl}/user`, authFetchOptions(token));
       if (!res.ok) {
-        show("Failed to fetch users from API", "error");
+        show("Failed to fetch users from API.", "error");
         setUsers([]);
         return;
       }
@@ -39,8 +39,7 @@ const UserList: React.FC = () => {
       const list = Array.isArray(data) ? data : data?.data ?? [];
       setUsers(list);
     } catch (err) {
-      console.error("Error loading users:", err);
-      show("Error loading users", "error");
+      show("Failed to load users.", "error");
       setUsers([]);
     } finally {
       setLoading(false);
@@ -79,8 +78,7 @@ const UserList: React.FC = () => {
       show("User deleted successfully!", "success");
       await load();
     } catch (error) {
-      console.error(error);
-      show("Error deleting user. Please try again.", "error");
+      show("Failed to delete user.", "error");
     }
   };
 
@@ -112,7 +110,6 @@ const UserList: React.FC = () => {
       show("User updated successfully!", "success");
       await load();
     } catch (err) {
-      console.error("Error updating user:", err);
       show("Failed to update user.", "error");
     } finally {
       setEditingId(null);
@@ -120,187 +117,197 @@ const UserList: React.FC = () => {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <Container sx={{ display: "flex", justifyContent: "center" }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
-    <div className={styles.card}>
-      <h2 className={styles.title}>User Management</h2>
+    <Container>
+      <Paper elevation={6} sx={{ p: 4, borderRadius: 2 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+          User Management 👥
+        </Typography>
 
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>Company</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+        <TableContainer>
+          <Table>
+            <TableHead sx={{ backgroundColor: "grey.400" }}>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>Address</TableCell>
+                <TableCell>Company</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
 
-        <tbody>
-          {currentUsers.map((u) => (
-            <tr key={u.id}>
-              <td>{u.id}</td>
+            <TableBody>
+              {currentUsers.map((u) => (
+                <TableRow key={u.id} sx={{ "&:hover": { backgroundColor: "grey.100" } }}>
+                  <TableCell>{u.id}</TableCell>
 
-              <td>
-                {editingId === u.id ? (
-                  <input
-                    type="text"
-                    value={editedUser.fullName ?? ""}
-                    onChange={(e) =>
-                      setEditedUser({ ...editedUser, fullName: e.target.value })
-                    }
-                  />
-                ) : (
-                  u.fullName
-                )}
-              </td>
-
-              <td>
-                {editingId === u.id ? (
-                  <input
-                    type="email"
-                    value={editedUser.email ?? ""}
-                    onChange={(e) =>
-                      setEditedUser({ ...editedUser, email: e.target.value })
-                    }
-                  />
-                ) : (
-                  u.email
-                )}
-              </td>
-
-              <td>
-                {editingId === u.id ? (
-                  <input
-                    type="text"
-                    value={editedUser.phoneNumber ?? ""}
-                    onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        phoneNumber: e.target.value,
-                      })
-                    }
-                  />
-                ) : (
-                  u.phoneNumber
-                )}
-              </td>
-
-              <td>
-                {editingId === u.id ? (
-                  <input
-                    type="text"
-                    value={editedUser.address ?? ""}
-                    onChange={(e) =>
-                      setEditedUser({ ...editedUser, address: e.target.value })
-                    }
-                  />
-                ) : (
-                  u.address
-                )}
-              </td>
-
-              <td>
-                {editingId === u.id ? (
-                  <input
-                    type="text"
-                    value={editedUser.company ?? ""}
-                    onChange={(e) =>
-                      setEditedUser({ ...editedUser, company: e.target.value })
-                    }
-                  />
-                ) : (
-                  u.company
-                )}
-              </td>
-
-              <td className={styles.actions}>
-                {editingId === u.id ? (
-                  <>
-                    <button className={styles.save} onClick={handleSave}>
-                      💾 Save
-                    </button>
-                    <button
-                      className={styles.cancel}
-                      onClick={() => {
-                        setEditingId(null);
-                        setEditedUser({});
-                      }}
-                    >
-                      ✖ Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {currentUser?.id === u.id || currentUser?.isAdmin ? (
-                      <button
-                        className={styles.edit}
-                        onClick={() => handleEdit(u)}
-                      >
-                        ✏️ Edit
-                      </button>
+                  <TableCell>
+                    {editingId === u.id ? (
+                      <TextField
+                        type="text"
+                        value={editedUser.fullName ?? ""}
+                        onChange={(e) =>
+                          setEditedUser({ ...editedUser, fullName: e.target.value })
+                        }
+                      />
                     ) : (
-                      <button
-                        className={styles.edit}
-                        disabled
-                        style={{ opacity: 0.4, cursor: "not-allowed" }}
-                      >
-                        ✏️ Edit
-                      </button>
+                      u.fullName
                     )}
-                    {currentUser?.isAdmin ? (
-                      <button
-                        className={styles.delete}
-                        onClick={() => handleDelete(u.id)}
-                      >
-                        🗑️ Delete
-                      </button>
+                  </TableCell>
+
+                  <TableCell>
+                    {editingId === u.id ? (
+                      <TextField
+                        type="email"
+                        value={editedUser.email ?? ""}
+                        onChange={(e) =>
+                          setEditedUser({ ...editedUser, email: e.target.value })
+                        }
+                      />
                     ) : (
-                      <button
-                        className={styles.delete}
-                        disabled
-                        style={{ opacity: 0.4, cursor: "not-allowed" }}
-                      >
-                        🗑️ Delete
-                      </button>
+                      u.email
                     )}
-                  </>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  </TableCell>
 
-      <div className={styles.pagination}>
-        <button
-          onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-          disabled={currentPage === 1}
-        >
-          ◀ Prev
-        </button>
+                  <TableCell>
+                    {editingId === u.id ? (
+                      <TextField
+                        type="text"
+                        value={editedUser.phoneNumber ?? ""}
+                        onChange={(e) =>
+                          setEditedUser({ ...editedUser, phoneNumber: e.target.value })
+                        }
+                      />
+                    ) : (
+                      u.phoneNumber
+                    )}
+                  </TableCell>
 
-        {[...Array(totalPages)].map((_, i) => (
-          <button
-            key={i + 1}
-            onClick={() => setCurrentPage(i + 1)}
-            className={i + 1 === currentPage ? styles.activePage : ""}
-          >
-            {i + 1}
-          </button>
-        ))}
+                  <TableCell>
+                    {editingId === u.id ? (
+                      <TextField
+                        type="text"
+                        value={editedUser.address ?? ""}
+                        onChange={(e) =>
+                          setEditedUser({ ...editedUser, address: e.target.value })
+                        }
+                      />
+                    ) : (
+                      u.address
+                    )}
+                  </TableCell>
 
-        <button
-          onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-          disabled={currentPage === totalPages}
-        >
-          Next ▶
-        </button>
-      </div>
-    </div>
+                  <TableCell>
+                    {editingId === u.id ? (
+                      <TextField
+                        type="text"
+                        value={editedUser.company ?? ""}
+                        onChange={(e) =>
+                          setEditedUser({ ...editedUser, company: e.target.value })
+                        }
+                      />
+                    ) : (
+                      u.company
+                    )}
+                  </TableCell>
+
+                  <TableCell>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      {editingId === u.id ? (
+                        <>
+                          <Tooltip title="Save">
+                            <Button variant="contained" color="success" onClick={handleSave}>
+                              💾
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Cancel">
+                            <Button
+                              variant="contained"
+                              color="error"
+                              onClick={() => {
+                                setEditingId(null);
+                                setEditedUser({});
+                              }}
+                            >
+                              ✖
+                            </Button>
+                          </Tooltip>
+                        </>
+                      ) : (
+                        <>
+                          <Tooltip title="Edit">
+                            <Button
+                              variant="contained"
+                              onClick={() => handleEdit(u)}
+                              disabled={ !( currentUser?.id === u.id || currentUser?.isAdmin )}
+                              sx={{
+                                opacity: currentUser?.id === u.id || currentUser?.isAdmin ? 1 : 0.4,
+                                cursor: currentUser?.id === u.id || currentUser?.isAdmin ? "pointer" : "not-allowed",
+                              }}
+                            >
+                              ✏️
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <Button
+                              variant="contained"
+                              onClick={() => handleDelete(u.id)}
+                              disabled={!currentUser?.isAdmin}
+                              sx={{
+                                opacity: currentUser?.isAdmin ? 1 : 0.4,
+                                cursor: currentUser?.isAdmin ? "pointer" : "not-allowed",
+                              }}
+                            >
+                              🗑️
+                            </Button>
+                          </Tooltip>
+                        </>
+                      )}
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Stack spacing={2} direction="row" justifyContent="center" sx={{ mt: 2 }}>
+          <Tooltip title="Prev">
+            <Button
+              variant="contained"
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              ◀
+            </Button>
+          </Tooltip>
+
+          <Typography sx={{ display: "flex", alignItems: "center" }}>
+            Page {currentPage} of {totalPages}
+          </Typography>
+
+          <Tooltip title="Next">
+            <Button
+              variant="contained"
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              ▶
+            </Button>
+          </Tooltip>
+        </Stack>
+      </Paper>
+    </Container>
   );
 };
 
