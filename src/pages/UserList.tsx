@@ -8,7 +8,7 @@ interface User {
   id: number;
   fullName: string;
   email: string;
-  phoneNumber: string;
+  phoneNumber: number;
   address: string;
   company: string;
   isAdmin: boolean;
@@ -39,7 +39,7 @@ const UserList: React.FC = () => {
       const list = Array.isArray(data) ? data : data?.data ?? [];
       setUsers(list);
     } catch (err) {
-      show("Failed to load users.", "error");
+      show(`Failed to load users: ${err}`, "error");
       setUsers([]);
     } finally {
       setLoading(false);
@@ -77,8 +77,8 @@ const UserList: React.FC = () => {
       if (!response.ok) throw new Error("Failed to delete user");
       show("User deleted successfully!", "success");
       await load();
-    } catch (error) {
-      show("Failed to delete user.", "error");
+    } catch (err) {
+      show(`Failed to delete user: ${err}`, "error");
     }
   };
 
@@ -106,11 +106,10 @@ const UserList: React.FC = () => {
         authFetchOptions(token, "PUT", updatedUser)
       );
       if (!res.ok) throw new Error(`Failed to update user: ${res.status}`);
-
       show("User updated successfully!", "success");
       await load();
     } catch (err) {
-      show("Failed to update user.", "error");
+      show(`Failed to update user: ${err}`, "error");
     } finally {
       setEditingId(null);
       setEditedUser({});
@@ -127,7 +126,7 @@ const UserList: React.FC = () => {
 
   return (
     <Container>
-      <Paper elevation={6} sx={{ p: 4, borderRadius: 2 }}>
+      <Paper elevation={6} sx={{ p: 4, borderRadius: 2, width: "fit-content", margin: "auto" }}>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
           User Management 👥
         </Typography>
@@ -182,10 +181,10 @@ const UserList: React.FC = () => {
                   <TableCell>
                     {editingId === u.id ? (
                       <TextField
-                        type="text"
+                        type="number"
                         value={editedUser.phoneNumber ?? ""}
                         onChange={(e) =>
-                          setEditedUser({ ...editedUser, phoneNumber: e.target.value })
+                          setEditedUser({ ...editedUser, phoneNumber: Number(e.target.value) })
                         }
                       />
                     ) : (
