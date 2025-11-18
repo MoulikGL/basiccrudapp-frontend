@@ -8,7 +8,7 @@ interface Product {
   id: number;
   name: string;
   description: string;
-  price: number;
+  price: number | null;
 }
 
 const PRODUCTS_PER_PAGE = 5;
@@ -162,7 +162,7 @@ const ProductList: React.FC = () => {
               variant="text"
               onClick={() => {
                 setCreating(true);
-                setCreatedProduct({ name: "", description: "", price: 0 });
+                setCreatedProduct({ name: "", description: "", price: null });
               }}
             >
               ➕
