@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Paper, Typography, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Stack, CircularProgress, Tooltip, Box } from "@mui/material";
+import { Container, Paper, Typography, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Stack, CircularProgress, Tooltip, Box, Avatar } from "@mui/material";
 import { useNotification } from "../NotificationProvider";
 import { useAuth } from "../auth/AuthProvider";
 import authFetchOptions from "../utils/authFetchOptions";
@@ -8,12 +8,14 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { PictureAsPdf, TableChart, Download, Add, Inventory, Save, Cancel, Edit, Delete, ChevronLeft, ChevronRight } from "@mui/icons-material";
+import notFoundImg from "../assets/404.png"; 
 
 interface Product {
   id: number;
   name: string;
   description: string;
   price: number | null;
+  imageurl: string;
 }
 
 const PRODUCTS_PER_PAGE = 5;
@@ -27,6 +29,7 @@ const ProductList: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [createdProduct, setCreatedProduct] = useState<Partial<Product>>({});
   // const [open, setOpen] = useState(false);
+  const [label, setLabel] = useState("Upload");
   const { user: currentUser, token } = useAuth();
   const { show } = useNotification();
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -189,6 +192,11 @@ const ProductList: React.FC = () => {
     }
   };
 
+  const handleUpload = async (f: React.ChangeEvent<HTMLInputElement>) => {
+    const file = f.target.files?.[0];
+    if (file) setLabel(file.name);
+  };
+
   if (loading) {
     return (
       <Container sx={{ display: "flex", justifyContent: "center" }}>
@@ -241,6 +249,7 @@ const ProductList: React.FC = () => {
                 <TableCell>Name</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Price</TableCell>
+                <TableCell>Image</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -284,6 +293,24 @@ const ProductList: React.FC = () => {
                         setCreatedProduct({ ...createdProduct, price: Number(e.target.value) })
                       }
                     />
+                  </TableCell>
+
+                  <TableCell>
+                    <input id="file-upload" type="file" accept="image/*" hidden onChange={handleUpload} />
+                    <label htmlFor="file-upload">
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        sx={{
+                          borderColor: "grey.500",
+                          color: "grey.500",
+                          padding: "15px 20px",
+                          textTransform: "none"
+                        }}
+                      >
+                        {label}
+                      </Button>
+                    </label>
                   </TableCell>
 
                   <TableCell>
@@ -358,6 +385,30 @@ const ProductList: React.FC = () => {
                       />
                     ) : (
                       p.price
+                    )}
+                  </TableCell>
+                  
+                  <TableCell>
+                    {editingId === p.id ? (
+                      <>
+                      <input id={`file-upload-${p.id}`} type="file" accept="image/*" hidden onChange={handleUpload} />
+                      <label htmlFor={`file-upload-${p.id}`}>
+                        <Button
+                          variant="outlined"
+                          component="span"
+                          sx={{
+                            borderColor: "grey.500",
+                            color: "grey.500",
+                            padding: "15px 20px",
+                            textTransform: "none"
+                          }}
+                        >
+                          {label}
+                        </Button>
+                      </label>
+                      </>
+                    ) : (
+                      <Avatar variant="square" src={p.imageurl || notFoundImg} />
                     )}
                   </TableCell>
 
