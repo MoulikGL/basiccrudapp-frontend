@@ -3,6 +3,10 @@ import { Container, Paper, Typography, TextField, Button, Table, TableBody, Tabl
 import { useNotification } from "../NotificationProvider";
 import { useAuth } from "../auth/AuthProvider";
 import authFetchOptions from "../utils/authFetchOptions";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 interface Product {
   id: number;
@@ -66,6 +70,38 @@ const ProductList: React.FC = () => {
     (currentPage - 1) * PRODUCTS_PER_PAGE,
     currentPage * PRODUCTS_PER_PAGE
   );
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+  
+    const tableColumn = ["ID", "Name", "Description", "Price"];
+    const tableRows: any[] = [];
+  
+    products.forEach((p) => {
+      tableRows.push([p.id, p.name, p.description, p.price]);
+    });
+  
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+    });
+  
+    doc.save("products.pdf");
+  };
+  
+  const exportExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(products);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
+  
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+  
+    saveAs(blob, "products.xlsx");
+  };
+  
 
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm(
@@ -157,6 +193,14 @@ const ProductList: React.FC = () => {
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             Product Management 📦
           </Typography>
+
+        <Button variant="contained" color="secondary" onClick={exportPDF}>
+          Export PDF
+        </Button>
+
+        <Button variant="contained" color="primary" onClick={exportExcel}>
+          Export Excel
+        </Button>
           <Tooltip title="Create">
             <Button
               variant="text"
