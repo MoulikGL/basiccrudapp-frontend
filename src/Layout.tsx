@@ -7,8 +7,8 @@ const Layout: React.FC = () => {
   return (
     <Box>
       <NavHeader />
-      {/* <NavSidebar /> */}
-      <Box component="main" sx={{ p: 4, ml: 0, minHeight: "100vh", background: "linear-gradient(135deg, #ce93d8, #512da8)" }}>
+      <NavSidebar />
+      <Box component="main" sx={{ p: 4, ml: "240px", minHeight: "100vh", background: "linear-gradient(135deg, #ce93d8, #512da8)" }}>
         <Toolbar />
         <Outlet />
       </Box>
