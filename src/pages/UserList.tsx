@@ -3,6 +3,7 @@ import { Container, Paper, Typography, TextField, Button, Table, TableBody, Tabl
 import { useNotification } from "../NotificationProvider";
 import { useAuth } from "../auth/AuthProvider";
 import authFetchOptions from "../utils/authFetchOptions";
+import { Save, Cancel, Edit, Delete, ChevronLeft, ChevronRight } from "@mui/icons-material";
 
 interface User {
   id: number;
@@ -130,7 +131,7 @@ const UserList: React.FC = () => {
     <Container>
       <Paper elevation={6} sx={{ p: 4, borderRadius: 2, width: "fit-content", margin: "auto" }}>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-          User Management 👥
+          User Management
         </Typography>
 
         <TableContainer>
@@ -228,7 +229,7 @@ const UserList: React.FC = () => {
                         <>
                           <Tooltip title="Save">
                             <Button variant="contained" color="success" onClick={handleSave}>
-                              💾
+                              <Save />
                             </Button>
                           </Tooltip>
                           <Tooltip title="Cancel">
@@ -240,7 +241,7 @@ const UserList: React.FC = () => {
                                 setEditedUser({});
                               }}
                             >
-                              ✖
+                              <Cancel />
                             </Button>
                           </Tooltip>
                         </>
@@ -256,7 +257,7 @@ const UserList: React.FC = () => {
                                 cursor: currentUser?.id === u.id || currentUser?.isAdmin ? "pointer" : "not-allowed",
                               }}
                             >
-                              ✏️
+                              <Edit />
                             </Button>
                           </Tooltip>
                           <Tooltip title="Delete">
@@ -269,7 +270,7 @@ const UserList: React.FC = () => {
                                 cursor: currentUser?.isAdmin ? "pointer" : "not-allowed",
                               }}
                             >
-                              🗑️
+                              <Delete />
                             </Button>
                           </Tooltip>
                         </>
@@ -289,7 +290,7 @@ const UserList: React.FC = () => {
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
             >
-              ◀
+              <ChevronLeft />
             </Button>
           </Tooltip>
 
@@ -303,7 +304,7 @@ const UserList: React.FC = () => {
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages}
             >
-              ▶
+              <ChevronRight />
             </Button>
           </Tooltip>
         </Stack>

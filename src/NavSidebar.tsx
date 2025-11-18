@@ -1,6 +1,6 @@
 import { Drawer, List, ListItem, ListItemButton, ListItemText, ListItemIcon } from "@mui/material";
 import { Link as RouterLink, useLocation } from "react-router-dom";
-import { FaUser, FaSimCard, FaUserCheck, FaHistory } from "react-icons/fa";
+import { People, Inventory, Login, PersonAdd } from "@mui/icons-material";
 import { useAuth } from "./auth/AuthProvider";
 
 const NavSidebar: React.FC = () => {
@@ -8,12 +8,12 @@ const NavSidebar: React.FC = () => {
   const location = useLocation();
   const items = user
     ? [
-        { to: "/products", label: "Products", icon: <FaSimCard /> },
-        { to: "/userlist", label: "User List", icon: <FaHistory /> },
+        { to: "/userlist", label: "Users", icon: <People /> },
+        { to: "/products", label: "Products", icon: <Inventory /> }
       ]
     : [
-        { to: "/login", label: "Login", icon: <FaUserCheck /> },
-        { to: "/signup", label: "Signup", icon: <FaUser /> },
+        { to: "/login", label: "Login", icon: <Login /> },
+        { to: "/signup", label: "Signup", icon: <PersonAdd /> }
       ];
 
   return (

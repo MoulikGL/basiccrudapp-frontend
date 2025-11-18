@@ -7,6 +7,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { PictureAsPdf, TableChart, Download, Add, Inventory, Save, Cancel, Edit, Delete, ChevronLeft, ChevronRight } from "@mui/icons-material";
 
 interface Product {
   id: number;
@@ -72,6 +73,11 @@ const ProductList: React.FC = () => {
   );
 
   const exportPDF = () => {
+    const confirmed = window.confirm(
+      "Download PDF?"
+    );
+    if (!confirmed) return;
+
     const doc = new jsPDF();
   
     const tableColumn = ["ID", "Name", "Description", "Price"];
@@ -90,6 +96,11 @@ const ProductList: React.FC = () => {
   };
   
   const exportExcel = () => {
+    const confirmed = window.confirm(
+      "Download Excel?"
+    );
+    if (!confirmed) return;
+
     const worksheet = XLSX.utils.json_to_sheet(products);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
@@ -191,25 +202,33 @@ const ProductList: React.FC = () => {
       <Paper elevation={6} sx={{ p: 4, borderRadius: 2, width: "fit-content", margin: "auto" }}>
         <Box sx={{ display: "flex", direction: "row", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Product Management 📦
-          </Typography>
+            Product Management
+          </Typography>          
 
-        <Button variant="contained" color="secondary" onClick={exportPDF}>
-          Export PDF
-        </Button>
-
-        <Button variant="contained" color="primary" onClick={exportExcel}>
-          Export Excel
-        </Button>
-          <Tooltip title="Create">
+          <Tooltip title="Add Product">
             <Button
-              variant="text"
+              variant="outlined"
               onClick={() => {
                 setCreating(true);
                 setCreatedProduct({ name: "", description: "", price: null });
               }}
             >
-              ➕
+              <Inventory />
+              <Add fontSize="small" />
+            </Button>
+          </Tooltip>
+
+          <Tooltip title="Export Excel">
+            <Button variant="outlined" onClick={exportExcel}>
+              <TableChart />
+              <Download fontSize="small" />
+            </Button>
+          </Tooltip>
+
+          <Tooltip title="Export PDF">
+            <Button variant="outlined" onClick={exportPDF}>
+              <PictureAsPdf />
+              <Download fontSize="small" />
             </Button>
           </Tooltip>
         </Box>
@@ -275,7 +294,7 @@ const ProductList: React.FC = () => {
                           color="success"
                           onClick={handleCreate}
                         >
-                          💾
+                          <Save />
                         </Button>
                       </Tooltip>
                       
@@ -288,7 +307,7 @@ const ProductList: React.FC = () => {
                             setCreatedProduct({});
                           }}
                         >
-                          ✖
+                          <Cancel />
                         </Button>
                       </Tooltip>
                     </Box>
@@ -348,7 +367,7 @@ const ProductList: React.FC = () => {
                         <>
                           <Tooltip title="Save">
                             <Button variant="contained" color="success" onClick={handleSave}>
-                              💾
+                              <Save />
                             </Button>
                           </Tooltip>
                           <Tooltip title="Cancel">
@@ -360,7 +379,7 @@ const ProductList: React.FC = () => {
                                 setEditedProduct({});
                               }}
                             >
-                              ✖
+                              <Cancel />
                             </Button>
                           </Tooltip>
                         </>
@@ -376,7 +395,7 @@ const ProductList: React.FC = () => {
                                 cursor: currentUser?.isAdmin ? "pointer" : "not-allowed",
                               }}
                             >
-                              ✏️
+                              <Edit />
                             </Button>
                           </Tooltip>
                           <Tooltip title="Delete">
@@ -389,7 +408,7 @@ const ProductList: React.FC = () => {
                                 cursor: currentUser?.isAdmin ? "pointer" : "not-allowed",
                               }}
                             >
-                              🗑️
+                              <Delete />
                             </Button>
                           </Tooltip>
                         </>
@@ -409,7 +428,7 @@ const ProductList: React.FC = () => {
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
             >
-              ◀
+              <ChevronLeft />
             </Button>
           </Tooltip>
 
@@ -423,7 +442,7 @@ const ProductList: React.FC = () => {
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages}
             >
-              ▶
+              <ChevronRight />
             </Button>
           </Tooltip>
         </Stack>
