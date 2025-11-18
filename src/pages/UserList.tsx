@@ -37,7 +37,9 @@ const UserList: React.FC = () => {
       }
       const data = await res.json();
       const list = Array.isArray(data) ? data : data?.data ?? [];
-      setUsers(list);
+      setUsers(
+        list.sort((a: User, b: User) => a.id - b.id)
+      );
     } catch (err) {
       show(`Failed to load users: ${err}`, "error");
       setUsers([]);

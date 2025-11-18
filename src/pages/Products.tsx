@@ -19,6 +19,9 @@ const ProductList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedProduct, setEditedProduct] = useState<Partial<Product>>({});
+  const [creating, setCreating] = useState(false);
+  const [createdProduct, setCreatedProduct] = useState<Partial<Product>>({});
+  // const [open, setOpen] = useState(false);
   const { user: currentUser, token } = useAuth();
   const { show } = useNotification();
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -34,7 +37,9 @@ const ProductList: React.FC = () => {
       }
       const data = await res.json();
       const list = Array.isArray(data) ? data : data?.data ?? [];
-      setProducts(list);
+      setProducts(
+        list.sort((a: Product, b: Product) => a.id - b.id)
+      );
     } catch (err) {
       show(`Failed to load products: ${err}`, "error");
       setProducts([]);
@@ -48,6 +53,8 @@ const ProductList: React.FC = () => {
   }, [apiUrl]);
 
   const totalPages = Math.max(1, Math.ceil(products.length / PRODUCTS_PER_PAGE));
+
+  const nextId = products.length > 0  ? products[products.length - 1].id + 1  : 1;
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -87,7 +94,7 @@ const ProductList: React.FC = () => {
   const handleSave = async () => {
     if (editingId === null) return;
 
-    if (!editedProduct.name || !editedProduct.price) {
+    if (!editedProduct.name || editedProduct.price == null) {
       show("Name and Price are required.", "error");
       return;
     }
@@ -113,6 +120,28 @@ const ProductList: React.FC = () => {
     }
   };
 
+  const handleCreate = async () => {    
+    if (!createdProduct.name || createdProduct.price == null) {
+      show("Name and Price are required.", "error");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${apiUrl}/product`,
+        authFetchOptions(token, "POST", createdProduct)
+      );
+      if (!res.ok) throw new Error(`Failed to create product: ${res.status}`);
+      show("Product created successfully!", "success");
+      await load();
+    } catch (err) {
+      show(`Failed to create product: ${err}`, "error");
+    } finally {
+      setCreating(false);
+      setCreatedProduct({});
+    }
+  };
+
   if (loading) {
     return (
       <Container sx={{ display: "flex", justifyContent: "center" }}>
@@ -124,9 +153,22 @@ const ProductList: React.FC = () => {
   return (
     <Container>
       <Paper elevation={6} sx={{ p: 4, borderRadius: 2, width: "fit-content", margin: "auto" }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-          Product Management 📦
-        </Typography>
+        <Box sx={{ display: "flex", direction: "row", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Product Management 📦
+          </Typography>
+          <Tooltip title="Create">
+            <Button
+              variant="text"
+              onClick={() => {
+                setCreating(true);
+                setCreatedProduct({ name: "", description: "", price: 0 });
+              }}
+            >
+              ➕
+            </Button>
+          </Tooltip>
+        </Box>
 
         <TableContainer>
           <Table>
@@ -139,8 +181,77 @@ const ProductList: React.FC = () => {
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
-
+  
             <TableBody>
+              {creating && (
+                <TableRow sx={{ "&:hover": { backgroundColor: "grey.100" } }}>
+                  <TableCell>{nextId}</TableCell>
+
+                  <TableCell>
+                    <TextField
+                      label="Name"
+                      type="text"
+                      placeholder={`Product${nextId}`}
+                      value={createdProduct.name ?? ""}
+                      onChange={e => 
+                        setCreatedProduct({ ...createdProduct, name: e.target.value })
+                      }
+                    />
+                  </TableCell>
+
+                  <TableCell>
+                    <TextField
+                      label="Description"
+                      type="text"
+                      placeholder={`Sample Product ${nextId}`}
+                      value={createdProduct.description ?? ""}
+                      onChange={e => 
+                        setCreatedProduct({ ...createdProduct, description: e.target.value })
+                      }
+                    />
+                  </TableCell>
+
+                  <TableCell>
+                    <TextField
+                      label="Price"
+                      type="number"
+                      placeholder={`${nextId* 100}`}
+                      value={createdProduct.price ?? ""}
+                      onChange={e => 
+                        setCreatedProduct({ ...createdProduct, price: Number(e.target.value) })
+                      }
+                    />
+                  </TableCell>
+
+                  <TableCell>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Tooltip title="Save">
+                        <Button
+                          variant="contained"
+                          color="success"
+                          onClick={handleCreate}
+                        >
+                          💾
+                        </Button>
+                      </Tooltip>
+                      
+                      <Tooltip title="Cancel">
+                        <Button
+                          variant="contained"
+                          color="error"
+                          onClick={() => {
+                            setCreating(false);
+                            setCreatedProduct({});
+                          }}
+                        >
+                          ✖
+                        </Button>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              )}
+
               {currentProducts.map((p) => (
                 <TableRow key={p.id} sx={{ "&:hover": { backgroundColor: "grey.100" } }}>
                   <TableCell>{p.id}</TableCell>
