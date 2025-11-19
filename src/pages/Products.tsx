@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Container, Paper, Typography, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Stack, CircularProgress, Tooltip, Box, Avatar } from "@mui/material";
 import { useNotification } from "../NotificationProvider";
 import { useAuth } from "../auth/AuthProvider";
@@ -29,7 +29,10 @@ const ProductList: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [createdProduct, setCreatedProduct] = useState<Partial<Product>>({});
   // const [open, setOpen] = useState(false);
-  const [label, setLabel] = useState("Upload");
+  const [createLabel, setCreateLabel] = useState("Upload");
+  const [editLabel, setEditLabel] = useState("Upload");
+  const createdFileRef = useRef<File | null>(null);
+  const editedFileRef = useRef<File | null>(null);
   const { user: currentUser, token } = useAuth();
   const { show } = useNotification();
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -77,7 +80,7 @@ const ProductList: React.FC = () => {
 
   const exportPDF = () => {
     const confirmed = window.confirm(
-      "Download PDF?"
+      "Export PDF?"
     );
     if (!confirmed) return;
 
@@ -100,7 +103,7 @@ const ProductList: React.FC = () => {
   
   const exportExcel = () => {
     const confirmed = window.confirm(
-      "Download Excel?"
+      "Export Excel?"
     );
     if (!confirmed) return;
 
@@ -161,6 +164,7 @@ const ProductList: React.FC = () => {
       );
       if (!res.ok) throw new Error(`Failed to update product: ${res.status}`);
       show("Product updated successfully!", "success");
+      setEditLabel("Upload");
       await load();
     } catch (err) {
       show(`Failed to update product: ${err}`, "error");
@@ -183,6 +187,7 @@ const ProductList: React.FC = () => {
       );
       if (!res.ok) throw new Error(`Failed to create product: ${res.status}`);
       show("Product created successfully!", "success");
+      setCreateLabel("Upload");
       await load();
     } catch (err) {
       show(`Failed to create product: ${err}`, "error");
@@ -192,10 +197,17 @@ const ProductList: React.FC = () => {
     }
   };
 
-  const handleUpload = async (f: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCreateUpload = async (f: React.ChangeEvent<HTMLInputElement>) => {
     const file = f.target.files?.[0];
-    if (file) setLabel(file.name);
+    createdFileRef.current = file || null;
+    if(file) setCreateLabel(file.name);
   };
+
+  const handleEditUpload = async (f: React.ChangeEvent<HTMLInputElement>) => {
+    const file = f.target.files?.[0];
+    editedFileRef.current = file || null;
+    if(file) setEditLabel(file.name);
+  }
 
   if (loading) {
     return (
@@ -296,7 +308,7 @@ const ProductList: React.FC = () => {
                   </TableCell>
 
                   <TableCell>
-                    <input id="file-upload" type="file" accept="image/*" hidden onChange={handleUpload} />
+                    <input id="file-upload" type="file" accept="image/*" hidden onChange={handleCreateUpload} />
                     <label htmlFor="file-upload">
                       <Button
                         variant="outlined"
@@ -308,7 +320,7 @@ const ProductList: React.FC = () => {
                           textTransform: "none"
                         }}
                       >
-                        {label}
+                        {createLabel}
                       </Button>
                     </label>
                   </TableCell>
@@ -332,6 +344,7 @@ const ProductList: React.FC = () => {
                           onClick={() => {
                             setCreating(false);
                             setCreatedProduct({});
+                            setCreateLabel("Upload");
                           }}
                         >
                           <Cancel />
@@ -391,7 +404,7 @@ const ProductList: React.FC = () => {
                   <TableCell>
                     {editingId === p.id ? (
                       <>
-                      <input id={`file-upload-${p.id}`} type="file" accept="image/*" hidden onChange={handleUpload} />
+                      <input id={`file-upload-${p.id}`} type="file" accept="image/*" hidden onChange={handleEditUpload} />
                       <label htmlFor={`file-upload-${p.id}`}>
                         <Button
                           variant="outlined"
@@ -403,7 +416,7 @@ const ProductList: React.FC = () => {
                             textTransform: "none"
                           }}
                         >
-                          {label}
+                          {editLabel}
                         </Button>
                       </label>
                       </>
@@ -428,6 +441,7 @@ const ProductList: React.FC = () => {
                               onClick={() => {
                                 setEditingId(null);
                                 setEditedProduct({});
+                                setEditLabel("Upload");
                               }}
                             >
                               <Cancel />
@@ -439,7 +453,10 @@ const ProductList: React.FC = () => {
                           <Tooltip title="Edit">
                             <Button
                               variant="contained"
-                              onClick={() => handleEdit(p)}
+                              onClick={() => {
+                                handleEdit(p);
+                                setEditLabel("Upload");
+                              }}
                               disabled={ !( currentUser?.isAdmin )}
                               sx={{
                                 opacity: currentUser?.isAdmin ? 1 : 0.4,
