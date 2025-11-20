@@ -9,7 +9,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { PictureAsPdf, TableChart, Download, Add, Inventory, Save, Cancel, Edit, Delete, ChevronLeft, ChevronRight } from "@mui/icons-material";
 import notFoundImg from "../assets/404.png";
-import { put } from "@vercel/blob";
+// import { put } from "@vercel/blob";
 
 interface Product {
   id: number;
@@ -196,26 +196,26 @@ const ProductList: React.FC = () => {
     }
   };
 
-  const uploadBlob = async (file: File) => {
-    const filenameSafe = `products/${Date.now()}-${file.name}`;
-    const blob = await put(filenameSafe, file, {
-      access: "public",
-      token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN
-    });
-    return blob.url ?? blob?.downloadUrl ?? null;
-  };
+  // const uploadBlob = async (file: File) => {
+  //   const filenameSafe = `products/${Date.now()}-${file.name}`;
+  //   const blob = await put(filenameSafe, file, {
+  //     access: "public",
+  //     token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN
+  //   });
+  //   return blob.url ?? blob?.downloadUrl ?? null;
+  // };
 
   const handleCreateUpload = async (f: React.ChangeEvent<HTMLInputElement>) => {
     const file = f.target.files?.[0];
     if (file) {
       setCreateLabel(file.name);
-      try {
-        const url = await uploadBlob(file);
-        if (url) setCreatedProduct((prev) => ({ ...prev, imageurl: url }));
-      } catch (err) {
-        show(`Image upload failed: ${err}`, "error");
-        setCreateLabel("Upload");
-      }
+      // try {
+      //   const url = await uploadBlob(file);
+      //   if (url) setCreatedProduct((prev) => ({ ...prev, imageurl: url }));
+      // } catch (err) {
+      //   show(`Image upload failed: ${err}`, "error");
+      //   setCreateLabel("Upload");
+      // }
     }
   };
 
@@ -223,13 +223,13 @@ const ProductList: React.FC = () => {
     const file = f.target.files?.[0];
     if (file) {
       setEditLabel(file.name);
-      try {
-        const url = await uploadBlob(file);
-        if (url) setEditedProduct((prev) => ({ ...prev, imageurl: url }));
-      } catch (err) {
-        show(`Image upload failed: ${err}`, "error");
-        setEditLabel("Upload");
-      }
+      // try {
+      //   const url = await uploadBlob(file);
+      //   if (url) setEditedProduct((prev) => ({ ...prev, imageurl: url }));
+      // } catch (err) {
+      //   show(`Image upload failed: ${err}`, "error");
+      //   setEditLabel("Upload");
+      // }
     }
   };
 
