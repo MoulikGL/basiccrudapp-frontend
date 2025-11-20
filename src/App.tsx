@@ -4,7 +4,7 @@ import Layout from "./Layout";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Products from "./pages/Products";
-import UserList from "./pages/UserList";
+import Users from "./pages/Users";
 import PageNotFound from "./pages/PageNotFound";
 import { useAuth } from "./auth/AuthProvider";
 
@@ -30,8 +30,8 @@ const App: React.FC = () => {
           element={user ? <Products /> : <Navigate to="/login" replace />}
         />
         <Route
-          path="userlist"
-          element={user ? <UserList /> : <Navigate to="/login" replace />}
+          path="users"
+          element={user ? <Users /> : <Navigate to="/login" replace />}
         />
         <Route path="*" element={<PageNotFound />} />
       </Route>

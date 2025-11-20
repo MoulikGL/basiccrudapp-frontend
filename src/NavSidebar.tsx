@@ -8,7 +8,7 @@ const NavSidebar: React.FC = () => {
   const location = useLocation();
   const items = user
     ? [
-        { to: "/userlist", label: "Users", icon: <People /> },
+        { to: "/users", label: "Users", icon: <People /> },
         { to: "/products", label: "Products", icon: <Inventory /> }
       ]
     : [

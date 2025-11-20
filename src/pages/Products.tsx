@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Paper, Typography, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Stack, CircularProgress, Tooltip, Box, Avatar } from "@mui/material";
 import { useNotification } from "../NotificationProvider";
 import { useAuth } from "../auth/AuthProvider";
@@ -8,7 +8,8 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { PictureAsPdf, TableChart, Download, Add, Inventory, Save, Cancel, Edit, Delete, ChevronLeft, ChevronRight } from "@mui/icons-material";
-import notFoundImg from "../assets/404.png"; 
+import notFoundImg from "../assets/404.png";
+import { put } from "@vercel/blob";
 
 interface Product {
   id: number;
@@ -31,8 +32,6 @@ const ProductList: React.FC = () => {
   // const [open, setOpen] = useState(false);
   const [createLabel, setCreateLabel] = useState("Upload");
   const [editLabel, setEditLabel] = useState("Upload");
-  const createdFileRef = useRef<File | null>(null);
-  const editedFileRef = useRef<File | null>(null);
   const { user: currentUser, token } = useAuth();
   const { show } = useNotification();
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -197,17 +196,42 @@ const ProductList: React.FC = () => {
     }
   };
 
+  const uploadBlob = async (file: File) => {
+    const filenameSafe = `products/${Date.now()}-${file.name}`;
+    const blob = await put(filenameSafe, file, {
+      access: "public",
+      token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN
+    });
+    return blob.url ?? blob?.downloadUrl ?? null;
+  };
+
   const handleCreateUpload = async (f: React.ChangeEvent<HTMLInputElement>) => {
     const file = f.target.files?.[0];
-    createdFileRef.current = file || null;
-    if(file) setCreateLabel(file.name);
+    if (file) {
+      setCreateLabel(file.name);
+      try {
+        const url = await uploadBlob(file);
+        if (url) setCreatedProduct((prev) => ({ ...prev, imageurl: url }));
+      } catch (err) {
+        show(`Image upload failed: ${err}`, "error");
+        setCreateLabel("Upload");
+      }
+    }
   };
 
   const handleEditUpload = async (f: React.ChangeEvent<HTMLInputElement>) => {
     const file = f.target.files?.[0];
-    editedFileRef.current = file || null;
-    if(file) setEditLabel(file.name);
-  }
+    if (file) {
+      setEditLabel(file.name);
+      try {
+        const url = await uploadBlob(file);
+        if (url) setEditedProduct((prev) => ({ ...prev, imageurl: url }));
+      } catch (err) {
+        show(`Image upload failed: ${err}`, "error");
+        setEditLabel("Upload");
+      }
+    }
+  };
 
   if (loading) {
     return (
